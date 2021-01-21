@@ -511,15 +511,15 @@ public class TestUtil extends Iced {
     return ParseDataset.parse(outputKey, new Key[]{nfs._key}, true, guessedSetup);
   }
 
-  protected Frame parse_test_file( String fname, String na_string, int check_header, byte[] column_types) {
+  public static Frame parse_test_file( String fname, String na_string, int check_header, byte[] column_types) {
     return parse_test_file(fname, na_string, check_header, column_types, null, null);
   }
 
-  protected Frame parse_test_file( String fname, String na_string, int check_header, byte[] column_types, ParseSetupTransformer transformer) {
+  public static Frame parse_test_file( String fname, String na_string, int check_header, byte[] column_types, ParseSetupTransformer transformer) {
     return parse_test_file( fname, na_string, check_header, column_types, transformer,null);
   }
 
-  protected Frame parse_test_file( String fname, String na_string, int check_header, byte[] column_types, ParseSetupTransformer transformer, int[] skippedColumns) {
+  public static Frame parse_test_file( String fname, String na_string, int check_header, byte[] column_types, ParseSetupTransformer transformer, int[] skippedColumns) {
     NFSFileVec nfs = makeNfsFileVec(fname);
 
     Key[] res = {nfs._key};
