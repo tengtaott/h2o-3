@@ -358,6 +358,7 @@ public class StackedEnsemble extends ModelBuilder<StackedEnsembleModel,StackedEn
         //Check if metalearner_params are passed in
         boolean hasMetaLearnerParams = _model._parms._metalearner_parameters != null;
         long metalearnerSeed = _model._parms._seed;
+        assert Objects.equals(_parms._fold_column, _parms._metalearner_fold_column) : "fold_column must match metalearner_fold_column";
 
         Metalearner metalearner = Metalearners.createInstance(metalearnerAlgoSpec.name());
         metalearner.init(
