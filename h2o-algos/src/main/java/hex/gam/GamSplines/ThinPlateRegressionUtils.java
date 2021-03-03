@@ -70,8 +70,8 @@ public class ThinPlateRegressionUtils {
     for (int index = 0; index < listSize; index++) {
       Integer[] oneBasis = onePolyBasis.get(index);
       int[] freqTable = generateOrderFreq(oneBasis);  // find polynomial basis order and count
-      ArrayList<ArrayList<Integer>> basisPermuations = new ArrayList<>();
-      ArrayList<Integer> prefix = new ArrayList<>();
+      List<List<Integer>> basisPermuations = new ArrayList<>();
+      List<Integer> prefix = new ArrayList<>();
       findPermute(freqTable, prefix, oneBasis.length, basisPermuations);
       addPermutationList(allPermutes, basisPermuations);
     }
@@ -83,15 +83,15 @@ public class ThinPlateRegressionUtils {
     return allPermutes;
   }
   
-  public static void addPermutationList(List<Integer[]> onePolyBasis, ArrayList<ArrayList<Integer>> permute1Basis) {
-    for (ArrayList<Integer> onePermute : permute1Basis) {
+  public static void addPermutationList(List<Integer[]> onePolyBasis, List<List<Integer>> permute1Basis) {
+    for (List<Integer> onePermute : permute1Basis) {
       Integer[] oneCombo = onePermute.toArray(new Integer[0]);
       onePolyBasis.add(oneCombo);
     }
   }
   
-  public static void findPermute(int[] freqMap, ArrayList<Integer> prefix, int remaining,
-                                 ArrayList<ArrayList<Integer>> basisPerm) {
+  public static void findPermute(int[] freqMap, List<Integer> prefix, int remaining,
+                                 List<List<Integer>> basisPerm) {
     if (remaining == 0) { // done with choosing all permutation
       basisPerm.add(prefix);
     } else {
@@ -169,10 +169,7 @@ public class ThinPlateRegressionUtils {
     if (totDegree == 0) {
       if (currCombo != null)
         allCombos.add(currCombo.clone());
-      return;
-    } else if (totDegree < 0 || index >= degreeCombo.length) { // last added value too big
-      return;
-    }  else {
+    }  else if (totDegree >= 0 && index < degreeCombo.length){
       int totPass = totDegree / degreeCombo[index];
       int degreeCount = 0;
       if (currCombo == null)
@@ -303,7 +300,9 @@ public class ThinPlateRegressionUtils {
     return knots;
   }
   
-  // this class performa scaling on TP penalty matrices that is done in R.
+  /**
+   * this class performs scaling on TP penalty matrices that is done in R.
+   */
   public static class ScaleTPPenalty extends MRTask<ScaleTPPenalty> {
     public double[][] _penaltyMat;
     double[] _maxAbsRowSum; // store maximum row sum per chunk

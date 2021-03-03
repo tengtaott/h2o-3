@@ -73,7 +73,6 @@ public class GAMV3 extends ModelBuilderSchema<GAM, GAMV3, GAMV3.GAMParametersV3>
             "max_runtime_secs",
             "custom_metric_func",
             "num_knots",  // array: number of knots for each predictor
-         //   "k", // array storing size of SVD's to use for thin plate regression
             "knot_ids", // string array storing frame keys that contains knot location
             "gam_columns",  // array: predictor column names array
             "standardize_TP_gam_cols", // standardize TP gam columns before transformation
@@ -230,11 +229,6 @@ public class GAMV3 extends ModelBuilderSchema<GAM, GAMV3, GAMV3.GAMParametersV3>
 
     @API(help = "Number of knots for gam predictors", level = Level.critical, gridable = true)
     public int[] num_knots;
-
-/*    @API(help = "Number of eigenvectors to use in SVD for thin plate regression.  If specified, must be of the same" +
-            " length as gam_columns even if the bs type is not thin-plate regression with SVD.", 
-            level = Level.critical, gridable = true)
-    public int[] k;*/ // for later version
 
     @API(help = "Arrays of predictor column names for gam for smoothers using single or multiple predictors like " +
             "{{'c1'},{'c2','c3'},{'c4'},...}", required = true, level = Level.critical, gridable = true)

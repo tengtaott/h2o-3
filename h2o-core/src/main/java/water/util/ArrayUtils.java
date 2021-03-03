@@ -886,11 +886,9 @@ public class ArrayUtils {
     return result;
   }
   public static int maxValue(Integer[] from) {
-    int result = from[0];
-    for (int i = 1; i<from.length; ++i)
-      if (from[i]>result) result = from[i];
-    return result;
+    return Arrays.stream(from).max(Integer::compare).get();
   }
+  
   public static long maxValue(int[] from) {
     int result = from[0];
     for (int i = 1; i<from.length; ++i)

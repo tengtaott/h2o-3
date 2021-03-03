@@ -72,8 +72,17 @@ public class ThinPlateDistanceWithKnots extends MRTask<ThinPlateDistanceWithKnot
     for (int colIndex = 0; colIndex < d; colIndex++)
       rowHolder[colIndex] = chk[colIndex].atd(rowIndex);
   }
-  
-  // This function perform the operation described in 3.3 regarding the part of data Xnmd.
+
+  /**
+   * This function perform the operation described in 3.3 regarding the part of data Xnmd.
+   * 
+   * @param fr: H2OFrame to add gamificed columns to.
+   * @param colNameStart start of column names for gamified columns
+   * @param parms GAMParameters
+   * @param zCST  transpose of zCS transform matrix
+   * @param newColNum number of gamified columns to be added
+   * @return
+   */
   public static Frame applyTransform(Frame fr, String colNameStart, GAMParameters parms, double[][] zCST, int newColNum) {
     int numCols = fr.numCols(); // == numKnots
     DataInfo frInfo = new DataInfo(fr, null, 0, false,  DataInfo.TransformType.NONE, 
