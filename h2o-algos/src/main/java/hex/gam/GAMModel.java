@@ -257,8 +257,8 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     public double _objective_epsilon = -1;
     public double _obj_reg = -1;
     public boolean _compute_p_values = false;
-    public boolean _scale_TP_penalty_mat = false;
-    public boolean _standardize_TP_gam_cols = false;
+    public boolean _scale_tp_penalty_mat = false;
+    public boolean _standardize_tp_gam_cols = false;
     public String[] _interactions=null;
     public StringPair[] _interaction_pairs=null;
     public Key<Frame> _plug_values = null;

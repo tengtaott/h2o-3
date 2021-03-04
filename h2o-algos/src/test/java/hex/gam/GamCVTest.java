@@ -218,7 +218,7 @@ public class GamCVTest extends TestUtil {
       params._valid = test._key;
       params._nfolds = 3;
       params._savePenaltyMat = true;
-      params._standardize_TP_gam_cols = true;
+      params._standardize_tp_gam_cols = true;
       GAMModel gam = new GAM(params).trainModel().get();  // GAM model without standarization of TP gam columns
       Scope.track_generic(gam);
       // check to make sure validation metrics, cross validation metrics are not null

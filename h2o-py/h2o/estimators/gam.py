@@ -42,7 +42,7 @@ class H2OGeneralizedAdditiveEstimator(H2OEstimator):
                    "export_checkpoints_dir", "stopping_rounds", "stopping_metric", "stopping_tolerance",
                    "balance_classes", "class_sampling_factors", "max_after_balance_size", "max_confusion_matrix_size",
                    "max_runtime_secs", "custom_metric_func", "num_knots", "knot_ids", "gam_columns",
-                   "standardize_TP_gam_cols", "scale_TP_penalty_mat", "bs", "scale", "keep_gam_cols", "auc_type"}
+                   "standardize_tp_gam_cols", "scale_tp_penalty_mat", "bs", "scale", "keep_gam_cols", "auc_type"}
 
     def __init__(self, **kwargs):
         super(H2OGeneralizedAdditiveEstimator, self).__init__()
@@ -979,33 +979,33 @@ class H2OGeneralizedAdditiveEstimator(H2OEstimator):
 
 
     @property
-    def standardize_TP_gam_cols(self):
+    def standardize_tp_gam_cols(self):
         """
-        standardize TP (thin plate) predictor columns
+        standardize tp (thin plate) predictor columns
 
         Type: ``bool``  (default: ``False``).
         """
-        return self._parms.get("standardize_TP_gam_cols")
+        return self._parms.get("standardize_tp_gam_cols")
 
-    @standardize_TP_gam_cols.setter
-    def standardize_TP_gam_cols(self, standardize_TP_gam_cols):
-        assert_is_type(standardize_TP_gam_cols, None, bool)
-        self._parms["standardize_TP_gam_cols"] = standardize_TP_gam_cols
+    @standardize_tp_gam_cols.setter
+    def standardize_tp_gam_cols(self, standardize_tp_gam_cols):
+        assert_is_type(standardize_tp_gam_cols, None, bool)
+        self._parms["standardize_tp_gam_cols"] = standardize_tp_gam_cols
 
 
     @property
-    def scale_TP_penalty_mat(self):
+    def scale_tp_penalty_mat(self):
         """
-        Scale penalty matrix for TP (thin plate) smoothers as in R
+        Scale penalty matrix for tp (thin plate) smoothers as in R
 
         Type: ``bool``  (default: ``False``).
         """
-        return self._parms.get("scale_TP_penalty_mat")
+        return self._parms.get("scale_tp_penalty_mat")
 
-    @scale_TP_penalty_mat.setter
-    def scale_TP_penalty_mat(self, scale_TP_penalty_mat):
-        assert_is_type(scale_TP_penalty_mat, None, bool)
-        self._parms["scale_TP_penalty_mat"] = scale_TP_penalty_mat
+    @scale_tp_penalty_mat.setter
+    def scale_tp_penalty_mat(self, scale_tp_penalty_mat):
+        assert_is_type(scale_tp_penalty_mat, None, bool)
+        self._parms["scale_tp_penalty_mat"] = scale_tp_penalty_mat
 
 
     @property

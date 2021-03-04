@@ -118,8 +118,8 @@
 #' @param custom_metric_func Reference to custom evaluation function, format: `language:keyName=funcName`
 #' @param num_knots Number of knots for gam predictors
 #' @param knot_ids String arrays storing frame keys of knots.  One for each gam column set specified in gam_columns
-#' @param standardize_TP_gam_cols \code{Logical}. standardize TP (thin plate) predictor columns Defaults to FALSE.
-#' @param scale_TP_penalty_mat \code{Logical}. Scale penalty matrix for TP (thin plate) smoothers as in R Defaults to FALSE.
+#' @param standardize_tp_gam_cols \code{Logical}. standardize tp (thin plate) predictor columns Defaults to FALSE.
+#' @param scale_tp_penalty_mat \code{Logical}. Scale penalty matrix for tp (thin plate) smoothers as in R Defaults to FALSE.
 #' @param bs Basis function type for each gam predictors, 0 for cr, 1 for thin plate regression with knots, 2 for thin
 #'        plate regression with SVD.  If specified, must be the same size as gam_columns
 #' @param scale Smoothing parameter for gam predictors.  If specified, must be of the same length as gam_columns
@@ -198,8 +198,8 @@ h2o.gam <- function(x,
                     custom_metric_func = NULL,
                     num_knots = NULL,
                     knot_ids = NULL,
-                    standardize_TP_gam_cols = FALSE,
-                    scale_TP_penalty_mat = FALSE,
+                    standardize_tp_gam_cols = FALSE,
+                    scale_tp_penalty_mat = FALSE,
                     bs = NULL,
                     scale = NULL,
                     keep_gam_cols = FALSE,
@@ -348,10 +348,10 @@ h2o.gam <- function(x,
     parms$knot_ids <- knot_ids
   if (!missing(gam_columns))
     parms$gam_columns <- gam_columns
-  if (!missing(standardize_TP_gam_cols))
-    parms$standardize_TP_gam_cols <- standardize_TP_gam_cols
-  if (!missing(scale_TP_penalty_mat))
-    parms$scale_TP_penalty_mat <- scale_TP_penalty_mat
+  if (!missing(standardize_tp_gam_cols))
+    parms$standardize_tp_gam_cols <- standardize_tp_gam_cols
+  if (!missing(scale_tp_penalty_mat))
+    parms$scale_tp_penalty_mat <- scale_tp_penalty_mat
   if (!missing(bs))
     parms$bs <- bs
   if (!missing(scale))
@@ -446,8 +446,8 @@ h2o.gam <- function(x,
                                     custom_metric_func = NULL,
                                     num_knots = NULL,
                                     knot_ids = NULL,
-                                    standardize_TP_gam_cols = FALSE,
-                                    scale_TP_penalty_mat = FALSE,
+                                    standardize_tp_gam_cols = FALSE,
+                                    scale_tp_penalty_mat = FALSE,
                                     bs = NULL,
                                     scale = NULL,
                                     keep_gam_cols = FALSE,
@@ -601,10 +601,10 @@ h2o.gam <- function(x,
     parms$knot_ids <- knot_ids
   if (!missing(gam_columns))
     parms$gam_columns <- gam_columns
-  if (!missing(standardize_TP_gam_cols))
-    parms$standardize_TP_gam_cols <- standardize_TP_gam_cols
-  if (!missing(scale_TP_penalty_mat))
-    parms$scale_TP_penalty_mat <- scale_TP_penalty_mat
+  if (!missing(standardize_tp_gam_cols))
+    parms$standardize_tp_gam_cols <- standardize_tp_gam_cols
+  if (!missing(scale_tp_penalty_mat))
+    parms$scale_tp_penalty_mat <- scale_tp_penalty_mat
   if (!missing(bs))
     parms$bs <- bs
   if (!missing(scale))

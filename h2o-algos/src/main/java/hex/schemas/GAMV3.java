@@ -75,8 +75,8 @@ public class GAMV3 extends ModelBuilderSchema<GAM, GAMV3, GAMV3.GAMParametersV3>
             "num_knots",  // array: number of knots for each predictor
             "knot_ids", // string array storing frame keys that contains knot location
             "gam_columns",  // array: predictor column names array
-            "standardize_TP_gam_cols", // standardize TP gam columns before transformation
-            "scale_TP_penalty_mat", // scale penalty matrix
+            "standardize_tp_gam_cols", // standardize TP gam columns before transformation
+            "scale_tp_penalty_mat", // scale penalty matrix
             "bs", // array, name of basis functions used
             "scale", // array, smoothing parameter for GAM,
             "keep_gam_cols",
@@ -247,11 +247,11 @@ public class GAMV3 extends ModelBuilderSchema<GAM, GAMV3, GAMV3.GAMParametersV3>
     @API(help="Save keys of model matrix", level = Level.secondary, direction = Direction.INPUT)
     public boolean keep_gam_cols; // if true will save keys storing GAM columns
 
-    @API(help="standardize TP (thin plate) predictor columns", level = Level.secondary, direction = Direction.INPUT)
-    public boolean standardize_TP_gam_cols; // if true, will standardize predictor columns before gamification
+    @API(help="standardize tp (thin plate) predictor columns", level = Level.secondary, direction = Direction.INPUT)
+    public boolean standardize_tp_gam_cols; // if true, will standardize predictor columns before gamification
 
-    @API(help="Scale penalty matrix for TP (thin plate) smoothers as in R", level = Level.secondary, direction = Direction.INPUT)
-    public boolean scale_TP_penalty_mat; // if true, will apply scaling to the penalty matrix CS
+    @API(help="Scale penalty matrix for tp (thin plate) smoothers as in R", level = Level.secondary, direction = Direction.INPUT)
+    public boolean scale_tp_penalty_mat; // if true, will apply scaling to the penalty matrix CS
     
     @API(help="String arrays storing frame keys of knots.  One for each gam column set specified in gam_columns", 
             level = Level.secondary, direction = Direction.INPUT)

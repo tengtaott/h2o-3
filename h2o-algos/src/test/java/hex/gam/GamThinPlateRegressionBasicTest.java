@@ -147,7 +147,7 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
       params._scale = new double[]{10, 10, 10};
       params._train = train._key;
       params._savePenaltyMat = true;
-      params._standardize_TP_gam_cols = true;
+      params._standardize_tp_gam_cols = true;
       GAMModel gam = new GAM(params).trainModel().get();
       Scope.track_generic(gam);
       // check starT is of size k x M
@@ -212,7 +212,7 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
       params._savePenaltyMat = true;
       GAMModel gam = new GAM(params).trainModel().get();  // GAM model without standarization of TP gam columns
       Scope.track_generic(gam);
-      params._standardize_TP_gam_cols = true;
+      params._standardize_tp_gam_cols = true;
       GAMModel gamStandardize = new GAM(params).trainModel().get(); // GAM model with standardization of TP gam column s
       Scope.track_generic(gamStandardize);
       // check CS penalty_matrix, they should be the same
@@ -245,10 +245,10 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
       params._gam_columns = gamCols;
       params._train = train._key;
       params._savePenaltyMat = true;
-      params._standardize_TP_gam_cols = true;
+      params._standardize_tp_gam_cols = true;
       GAMModel gam = new GAM(params).trainModel().get();  // GAM model without standarization of TP gam columns
       Scope.track_generic(gam);
-      params._scale_TP_penalty_mat = true;
+      params._scale_tp_penalty_mat = true;
       GAMModel gamScale = new GAM(params).trainModel().get(); // GAM model with standardization of TP gam column s
       Scope.track_generic(gamScale);
       // check CS penalty_matrix, they should be the same regardless of TP penalty matrix scaling
@@ -283,7 +283,7 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
       params._scale = new double[]{10, 10, 10, 10};
       params._train = train._key;
       params._savePenaltyMat = true;
-      params._standardize_TP_gam_cols = true;
+      params._standardize_tp_gam_cols = true;
       params._standardize = true;
       GAMModel gamStandardize = new GAM(params).trainModel().get();
       Scope.track_generic(gamStandardize);
@@ -322,7 +322,7 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
       params._train = trainFrame._key;
       params._valid = testFrame._key;
       params._savePenaltyMat = true;
-      params._standardize_TP_gam_cols = true;
+      params._standardize_tp_gam_cols = true;
       params._standardize = true;
       GAMModel gamStandardize = new GAM(params).trainModel().get();
       Scope.track_generic(gamStandardize);
@@ -433,7 +433,7 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
       params._gam_columns = gamCols;
       params._train = train._key;
       params._savePenaltyMat = true;
-      params._standardize_TP_gam_cols = true;
+      params._standardize_tp_gam_cols = true;
       GAMModel gam = new GAM(params).trainModel().get();
       Scope.track_generic(gam);
       for (int gamInd = 0; gamInd < gamCols.length; gamInd++)
@@ -540,7 +540,7 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
     for (int rowIndex = 0; rowIndex < data.numRows(); rowIndex = rowIndex+rowInd) {
       grabOneRow(data, dataInput, parms._gam_columns_sorted[gamIndex], rowIndex);
       calculateDistance(dataDistance, dataInput, numKnot, knots, d, m, (d % 2==0), tpDistance._constantTerms, 
-              output._oneOGamColStd[gamIndex], parms._standardize_TP_gam_cols);
+              output._oneOGamColStd[gamIndex], parms._standardize_tp_gam_cols);
       double[] dataDistanceCS = multVecArr(dataDistance, zCS);
       generatePolyOneRow(dataInput, allPolyBasis, dataPoly);
       System.arraycopy(dataDistanceCS, 0, dataDistPlusPoly, 0, numKnotsMinusM);
@@ -587,8 +587,8 @@ public class GamThinPlateRegressionBasicTest extends TestUtil {
       params._gam_columns = gamCols;
       params._train = train._key;
       params._savePenaltyMat = true;
-      params._standardize_TP_gam_cols = true;
-      params._scale_TP_penalty_mat = true;
+      params._standardize_tp_gam_cols = true;
+      params._scale_tp_penalty_mat = true;
       GAMModel gam = new GAM(params).trainModel().get();
       Scope.track_generic(gam);
       for (int gamInd = 0; gamInd < gamCols.length; gamInd++)

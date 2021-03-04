@@ -493,7 +493,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
         System.arraycopy(oneOverColStd, 0, _oneOGamColStd[_thinPlateGamColIndex], 0, oneOverColStd.length);
         ThinPlateDistanceWithKnots distanceMeasure = 
                 new ThinPlateDistanceWithKnots(_knots, _numPred, oneOverColStd, 
-                        _parms._standardize_TP_gam_cols).doAll(_numKnots, Vec.T_NUM, _predictVec); // Xnmd in 3.1
+                        _parms._standardize_tp_gam_cols).doAll(_numKnots, Vec.T_NUM, _predictVec); // Xnmd in 3.1
         List<Integer[]> polyBasisDegree = findPolyBasis(_numPred, calculatem(_numPred));// polynomial basis lists in 3.2
         int[][] polyBasisArray = convertList2Array(polyBasisDegree, _M, _numPred);
         copy2DArray(polyBasisArray, _allPolyBasisList[_thinPlateGamColIndex]);
@@ -506,14 +506,14 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
         for (int index = 0; index < _numKnots; index++)
           _gamColMeans[_gamColIndex][index] = thinPlateFrame.vec(index).mean();
         double[][] starT = generateStarT(_knots, polyBasisDegree, rawColMeans, oneOverColStd, 
-                _parms._standardize_TP_gam_cols); // generate T* in 3.2.3
+                _parms._standardize_tp_gam_cols); // generate T* in 3.2.3
         double[][] qmat = generateQR(starT);
         double[][] penaltyMat = distanceMeasure.generatePenalty(qmat);  // penalty matrix 3.1.1
         double[][] zCST = generateOrthogonalComplement(qmat, starT, _numKnotsMM, _parms._seed);
         copy2DArray(zCST, _zTransposeCS[_thinPlateGamColIndex]);
         ThinPlatePolynomialWithKnots thinPlatePoly = new ThinPlatePolynomialWithKnots(_numPred,
                 polyBasisArray, rawColMeans, oneOverColStd, 
-                _parms._standardize_TP_gam_cols).doAll(_M, Vec.T_NUM, _predictVec);// generate polynomial basis T in 3.2
+                _parms._standardize_tp_gam_cols).doAll(_M, Vec.T_NUM, _predictVec);// generate polynomial basis T in 3.2
         Frame thinPlatePolyBasis = thinPlatePoly.outputFrame(null, polyNames, null);
         for (int index = 0; index < _M; index++)  // calculate gamified column means
           _gamColMeans[_gamColIndex][index+_numKnots] = thinPlatePolyBasis.vec(index).mean();
@@ -524,7 +524,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
         copy2DArray(ztranspose, _zTranspose[_gamColIndex]);
         double[][] penaltyMatCS = ArrayUtils.multArrArr(ArrayUtils.multArrArr(zCST, penaltyMat),
                 ArrayUtils.transpose(zCST));  // transform penalty matrix to transpose(Zcs)*Xnmd*Zcs, 3.3
-        if (_parms._scale_TP_penalty_mat) {   // R does this scaling of penalty matrix.  I left it to users to choose
+        if (_parms._scale_tp_penalty_mat) {   // R does this scaling of penalty matrix.  I left it to users to choose
           ScaleTPPenalty scaleTPPenaltyCS = new ScaleTPPenalty(penaltyMatCS, thinPlateFrame).doAll(thinPlateFrame);
           _penaltyScale[_gamColIndex] = scaleTPPenaltyCS._s_scale;
           penaltyMatCS = scaleTPPenaltyCS._penaltyMat;
