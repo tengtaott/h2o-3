@@ -31,6 +31,7 @@ public class HdfsDelegationTokenRefresher implements Runnable {
     public static final String H2O_AUTH_TOKEN_REFRESHER_INTERVAL_RATIO = "h2o.auth.tokenRefresher.intervalRatio";
     public static final String H2O_AUTH_TOKEN_REFRESHER_MAX_ATTEMPTS = "h2o.auth.tokenRefresher.maxAttempts";
     public static final String H2O_AUTH_TOKEN_REFRESHER_RETRY_DELAY_SECS = "h2o.auth.tokenRefresher.retryDelaySecs";
+    public static final String H2O_AUTH_TOKEN_REFRESHER_FALLBACK_INTERVAL_SECS = "h2o.auth.tokenRefresher.fallbackIntervalSecs";
 
     public static void setup(Configuration conf, String tmpDir) throws IOException {
         boolean enabled = conf.getBoolean(H2O_AUTH_TOKEN_REFRESHER_ENABLED, false);
@@ -67,6 +68,7 @@ public class HdfsDelegationTokenRefresher implements Runnable {
     private final double _intervalRatio;
     private final int _maxAttempts;
     private final int _retryDelaySecs;
+    private final long _fallbackIntervalSecs;
 
     public HdfsDelegationTokenRefresher(
             Configuration conf,
@@ -80,25 +82,26 @@ public class HdfsDelegationTokenRefresher implements Runnable {
         _intervalRatio = Double.parseDouble(conf.get(H2O_AUTH_TOKEN_REFRESHER_INTERVAL_RATIO, "0.4"));
         _maxAttempts = conf.getInt(H2O_AUTH_TOKEN_REFRESHER_MAX_ATTEMPTS, 12);
         _retryDelaySecs = conf.getInt(H2O_AUTH_TOKEN_REFRESHER_RETRY_DELAY_SECS, 10);
+        _fallbackIntervalSecs = conf.getInt(H2O_AUTH_TOKEN_REFRESHER_FALLBACK_INTERVAL_SECS, 12 * 3600); // 12h
     }
 
     public void start() {
-        long interval;
+        long intervalSecs = 0L;
         try {
-             interval = getTokenRenewalInterval(loginAuthUser());
+             intervalSecs = getTokenRenewalIntervalSecs(loginAuthUser());
         } catch (IOException | InterruptedException e) {
-            log("Encountered error while trying to determine token renewal interval", e);
-            interval = Long.MAX_VALUE;
+            log("Encountered error while trying to determine token renewal interval.", e);
         }
-        final long actualInterval;
-        if (interval == Long.MAX_VALUE) {
-            actualInterval = 12 * 3600 * 1000; // 12h
-            log("Token renewal interval was not determined, will use 12h", null);
+        final long actualIntervalSecs;
+        if (intervalSecs == 0L) {
+            actualIntervalSecs = _fallbackIntervalSecs;
+            log("Token renewal interval was not determined, will use " + _fallbackIntervalSecs + "s.", null);
         } else {
-            actualInterval = (long) (interval * _intervalRatio);
-            log("Determined token renewal interval = " + interval + "ms. Using actual interval = " + actualInterval + "ms.", null);
+            actualIntervalSecs = (long) (intervalSecs * _intervalRatio);
+            log("Determined token renewal interval = " + intervalSecs + "s. " +
+                    "Using actual interval = " + actualIntervalSecs + "s (ratio=" + _intervalRatio + ").", null);
         }
-        _executor.scheduleAtFixedRate(this, 0, actualInterval, TimeUnit.MILLISECONDS);
+        _executor.scheduleAtFixedRate(this, 0, actualIntervalSecs, TimeUnit.SECONDS);
     }
 
     private static void log(String s, Exception e) {
@@ -152,9 +155,9 @@ public class HdfsDelegationTokenRefresher implements Runnable {
         return tokenUser;
     }
     
-    private long getTokenRenewalInterval(UserGroupInformation tokenUser) throws IOException, InterruptedException {
+    private long getTokenRenewalIntervalSecs(UserGroupInformation tokenUser) throws IOException, InterruptedException {
         Credentials creds = refreshTokens(tokenUser);
-        return tokenUser.doAs((PrivilegedExceptionAction<Long>) () ->
+        long intervalMillis = tokenUser.doAs((PrivilegedExceptionAction<Long>) () ->
             creds.getAllTokens()
                     .stream()
                     .map(token -> {
@@ -172,6 +175,8 @@ public class HdfsDelegationTokenRefresher implements Runnable {
                         }
                     }).min(Long::compareTo).orElse(Long.MAX_VALUE)
         );
+        return intervalMillis > 0 && intervalMillis < Long.MAX_VALUE ? 
+                intervalMillis / 1000 : 0L;
     }
 
     private static Token<?>[] fetchDelegationTokens(String renewer, Credentials credentials) throws IOException {
