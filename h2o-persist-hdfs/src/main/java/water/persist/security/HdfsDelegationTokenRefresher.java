@@ -29,6 +29,8 @@ public class HdfsDelegationTokenRefresher implements Runnable {
     public static final String H2O_AUTH_KEYTAB = "h2o.auth.keytab";
     public static final String H2O_AUTH_TOKEN_REFRESHER_ENABLED = "h2o.auth.tokenRefresher.enabled";
     public static final String H2O_AUTH_TOKEN_REFRESHER_INTERVAL_RATIO = "h2o.auth.tokenRefresher.intervalRatio";
+    public static final String H2O_AUTH_TOKEN_REFRESHER_MAX_ATTEMPTS = "h2o.auth.tokenRefresher.maxAttempts";
+    public static final String H2O_AUTH_TOKEN_REFRESHER_RETRY_DELAY_SECS = "h2o.auth.tokenRefresher.retryDelaySecs";
 
     public static void setup(Configuration conf, String tmpDir) throws IOException {
         boolean enabled = conf.getBoolean(H2O_AUTH_TOKEN_REFRESHER_ENABLED, false);
@@ -43,9 +45,8 @@ public class HdfsDelegationTokenRefresher implements Runnable {
             log("Keytab not provided, HDFS tokens will not be refreshed by H2O and their lifespan will be limited", null);
             return;
         }
-        double intervalRatio = Double.parseDouble(conf.get(H2O_AUTH_TOKEN_REFRESHER_INTERVAL_RATIO, "0.4"));
         String authKeytabPath = writeKeytabToFile(authKeytab, tmpDir);
-        new HdfsDelegationTokenRefresher(authPrincipal, authKeytabPath, authUser, intervalRatio).start();
+        new HdfsDelegationTokenRefresher(conf, authPrincipal, authKeytabPath, authUser).start();
     }
 
     private static String writeKeytabToFile(String authKeytab, String tmpDir) throws IOException {
@@ -64,17 +65,21 @@ public class HdfsDelegationTokenRefresher implements Runnable {
     private final String _authKeytabPath;
     private final String _authUser;
     private final double _intervalRatio;
+    private final int _maxAttempts;
+    private final int _retryDelaySecs;
 
     public HdfsDelegationTokenRefresher(
+            Configuration conf,
             String authPrincipal,
             String authKeytabPath,
-            String authUser,
-            double intervalRatio
+            String authUser
     ) {
         _authPrincipal = authPrincipal;
         _authKeytabPath = authKeytabPath;
         _authUser = authUser;
-        _intervalRatio = intervalRatio;
+        _intervalRatio = Double.parseDouble(conf.get(H2O_AUTH_TOKEN_REFRESHER_INTERVAL_RATIO, "0.4"));
+        _maxAttempts = conf.getInt(H2O_AUTH_TOKEN_REFRESHER_MAX_ATTEMPTS, 12);
+        _retryDelaySecs = conf.getInt(H2O_AUTH_TOKEN_REFRESHER_RETRY_DELAY_SECS, 10);
     }
 
     public void start() {
@@ -82,21 +87,22 @@ public class HdfsDelegationTokenRefresher implements Runnable {
         try {
              interval = getTokenRenewalInterval(loginAuthUser());
         } catch (IOException | InterruptedException e) {
-            log("Failed to determine delegation token renewal interval", e);
-            return;
+            log("Encountered error while trying to determine token renewal interval", e);
+            interval = Long.MAX_VALUE;
         }
         final long actualInterval;
         if (interval == Long.MAX_VALUE) {
-            log("Couldn't determine tokens renewal interval, will use 12h", null);
             actualInterval = 12 * 3600 * 1000; // 12h
-        } else
+            log("Token renewal interval was not determined, will use 12h", null);
+        } else {
             actualInterval = (long) (interval * _intervalRatio);
-        log("Determined token renewal interval = " + interval + "ms. Using actual interval = " + actualInterval + "ms.", null);
-        _executor.scheduleAtFixedRate(this, 0, interval, TimeUnit.MILLISECONDS);
+            log("Determined token renewal interval = " + interval + "ms. Using actual interval = " + actualInterval + "ms.", null);
+        }
+        _executor.scheduleAtFixedRate(this, 0, actualInterval, TimeUnit.MILLISECONDS);
     }
 
     private static void log(String s, Exception e) {
-        System.out.println("TOKEN REFRESH: " + s);
+        System.out.println("HDFS TOKEN REFRESH: " + s);
         if (e != null) {
             e.printStackTrace(System.out);
         }
@@ -109,23 +115,27 @@ public class HdfsDelegationTokenRefresher implements Runnable {
             _executor.shutdown();
             return;
         }
-        try {
-            Credentials creds = refreshTokens(loginAuthUser());
-            distribute(creds);
-        } catch (IOException | InterruptedException e) {
-            log("Failed to refresh token.", e);
+        for (int i = 0; i < _maxAttempts; i++) {
+            try {
+                Credentials creds = refreshTokens(loginAuthUser());
+                distribute(creds);
+                return;
+            } catch (IOException | InterruptedException e) {
+                log("Failed to refresh token (attempt " + i + " out of " + _maxAttempts + "). Will retry in " + _retryDelaySecs + "s.", e);
+            }
+            try {
+                Thread.sleep(_retryDelaySecs * 1000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
     private Credentials refreshTokens(UserGroupInformation tokenUser) throws IOException, InterruptedException {
         return tokenUser.doAs((PrivilegedExceptionAction<Credentials>) () -> {
             Credentials creds = new Credentials();
-            try {
-                Token<?>[] tokens = fetchDelegationTokens(_authUser, creds);
-                log("Fetched delegation tokens: " + Arrays.toString(tokens), null);
-            } catch (IOException e) {
-                log("Failed to fetch delegation tokens", e);
-            }
+            Token<?>[] tokens = fetchDelegationTokens(_authUser, creds);
+            log("Fetched delegation tokens: " + Arrays.toString(tokens), null);
             return creds;
         });
     }
