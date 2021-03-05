@@ -52,7 +52,7 @@ public class StackedEnsembleTest extends TestUtil {
 
         basicEnsemble("./smalldata/junit/cars.csv",
             null,
-            new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return ~fr.find("economy (mpg)"); }},
+            new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return fr.find("economy (mpg)"); }},
             false, DistributionFamily.gaussian, Algorithm.AUTO, false);
 
         basicEnsemble("./smalldata/airlines/allyears2k_headers.zip",
@@ -81,7 +81,7 @@ public class StackedEnsembleTest extends TestUtil {
 
         basicEnsemble("./smalldata/junit/cars.csv",
                 null,
-                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return ~fr.find("economy (mpg)"); }},
+                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return fr.find("economy (mpg)"); }},
                 false, DistributionFamily.gaussian, Algorithm.gbm, false);
 
         basicEnsemble("./smalldata/airlines/allyears2k_headers.zip",
@@ -109,7 +109,7 @@ public class StackedEnsembleTest extends TestUtil {
 
         basicEnsemble("./smalldata/junit/cars.csv",
                 null,
-                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return ~fr.find("economy (mpg)"); }},
+                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return fr.find("economy (mpg)"); }},
                 false, DistributionFamily.gaussian, Algorithm.drf, false);
 
         basicEnsemble("./smalldata/airlines/allyears2k_headers.zip",
@@ -137,7 +137,7 @@ public class StackedEnsembleTest extends TestUtil {
 
         basicEnsemble("./smalldata/junit/cars.csv",
                 null,
-                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return ~fr.find("economy (mpg)"); }},
+                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return fr.find("economy (mpg)"); }},
                 false, DistributionFamily.gaussian, Algorithm.deeplearning, false);
 
         basicEnsemble("./smalldata/airlines/allyears2k_headers.zip",
@@ -168,7 +168,7 @@ public class StackedEnsembleTest extends TestUtil {
         // Regression tests
         basicEnsemble("./smalldata/junit/cars.csv",
                 null,
-                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return ~fr.find("economy (mpg)"); }},
+                new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return fr.find("economy (mpg)"); }},
                 false, DistributionFamily.gaussian, Algorithm.glm, false);
 
         // Binomial tests
@@ -309,7 +309,7 @@ public class StackedEnsembleTest extends TestUtil {
     @Test public void testBlending() {
         basicEnsemble("./smalldata/junit/cars.csv",
             null,
-            new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return ~fr.find("economy (mpg)"); }},
+            new StackedEnsembleTest.PrepData() { int prep(Frame fr ) {fr.remove("name").remove(); return fr.find("economy (mpg)"); }},
             false, DistributionFamily.gaussian, Algorithm.AUTO, true);
 
         basicEnsemble("./smalldata/airlines/allyears2k_headers.zip",
@@ -692,7 +692,6 @@ public class StackedEnsembleTest extends TestUtil {
 
             // Build GBM
             GBMModel.GBMParameters gbmParameters = new GBMModel.GBMParameters();
-            if( idx < 0 ) idx = ~idx;
             // Configure GBM
             gbmParameters._train = training_frame._key;
             gbmParameters._valid = (validation_frame == null ? null : validation_frame._key);
@@ -1051,56 +1050,6 @@ public class StackedEnsembleTest extends TestUtil {
   }
 
   @Test
-  public void testInvalidFoldColumn_trainingFrame() {
-    GBMModel gbmModel = null;
-    try {
-      Scope.enter();
-
-      final Frame trainingFrame = TestUtil.parse_test_file("./smalldata/iris/iris_wheader.csv");
-      Scope.track(trainingFrame);
-
-      GBMModel.GBMParameters parameters = new GBMModel.GBMParameters();
-      parameters._train = trainingFrame._key;
-      parameters._fold_column = "class";
-      parameters._seed = 0xFEED;
-      parameters._response_column = "petal_len";
-      parameters._ntrees = 1;
-      parameters._keep_cross_validation_predictions = true;
-
-      GBM gbm = new GBM(parameters);
-      gbmModel = gbm.trainModel().get();
-      assertNotNull(gbmModel);
-
-      final Frame seTrain = new Frame(Key.<Frame>make(), trainingFrame.names(), trainingFrame.vecs());
-      Vec foldVec = seTrain.remove("class");
-      seTrain.add("class", foldVec.toStringVec());
-      DKV.put(seTrain);
-      Scope.track(seTrain);
-
-      final StackedEnsembleParameters seParams = new StackedEnsembleParameters();
-      seParams._train = seTrain._key;
-      seParams._response_column = "petal_len";
-      seParams._metalearner_algorithm = Algorithm.AUTO;
-      seParams._base_models = new Key[]{gbmModel._key};
-      seParams._seed = 0x5EED;
-      seParams._metalearner_fold_column = "class";
-
-      expectedException.expect(IllegalArgumentException.class);
-      expectedException.expectMessage("Specified fold column 'class' not found in one of the supplied data frames. Available column names are: [sepal_len, sepal_wid, petal_wid, petal_len]");
-
-      new StackedEnsemble(seParams);
-      fail("Expected the Stack Ensemble Model never to be initialized successfully.");
-    } finally {
-      Scope.exit();
-      if(gbmModel != null){
-        gbmModel.deleteCrossValidationModels();
-        gbmModel.deleteCrossValidationPreds();
-        gbmModel.remove();
-      }
-    }
-  }
-
-  @Test
   public void testBaseModelsWorkWithGrid() {
     GBMModel gbmModel = null;
     try {
@@ -1424,7 +1373,7 @@ public class StackedEnsembleTest extends TestUtil {
                             Scope.track(acVec);
                             acVec.setNA(0);
                             fr.insertVec(0, "almost_constant", acVec);
-                            return ~fr.find("economy (mpg)");
+                            return fr.find("economy (mpg)");
                         }
                     },
                     false, DistributionFamily.gaussian, Algorithm.glm, false);

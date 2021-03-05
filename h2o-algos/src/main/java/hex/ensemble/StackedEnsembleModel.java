@@ -14,6 +14,7 @@ import water.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.stream.Stream;
 
 import static hex.Model.Parameters.FoldAssignmentScheme.AUTO;
@@ -99,6 +100,16 @@ public class StackedEnsembleModel extends Model<StackedEnsembleModel,StackedEnse
     
     public final Frame blending() { return _blending == null ? null : _blending.get(); }
 
+    @Override
+    public String[] getNonPredictors() {
+      HashSet<String> nonPredictors = new HashSet<>();
+      nonPredictors.addAll(Arrays.asList(super.getNonPredictors()));
+      if (null != _metalearner_parameters)
+        nonPredictors.addAll(Arrays.asList(_metalearner_parameters.getNonPredictors()));
+      if (null != _metalearner_fold_column)
+        nonPredictors.add(_metalearner_fold_column);
+      return nonPredictors.toArray(new String[0]);
+    }
   }
 
   public static class StackedEnsembleOutput extends Model.Output {
